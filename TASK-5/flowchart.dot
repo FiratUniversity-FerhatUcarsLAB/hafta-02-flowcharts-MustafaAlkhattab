@@ -1,0 +1,100 @@
+digraph AkilliEvGuvenlikSistemi {
+    // Grafiğin genel ayarları
+    rankdir=TB;
+    node [shape=box, style="filled", fillcolor="#ECECEC", fontname="Inter", margin=0.2];
+    edge [fontname="Inter"];
+
+    // Başlangıç ve Bitiş
+    N0 [label="BAŞLANGIÇ", shape=oval, fillcolor="#C3E6CB"];
+    E1 [label="SİSTEM SONU", shape=oval, fillcolor="#FFD7D7"];
+
+    // 1. Aktivasyon Kontrolü
+    N1 [label="Değişkenleri Başlat\n(SistemAktif=Y, Bakiye=5000, vb.)"];
+    N2 [label="EKRANA_YAZ: Sistemi Aktif Et? ('A'/'C')", shape=parallelogram, fillcolor="#B3E0FF"];
+    D1 [label="Komut == 'A'?", shape=diamond, fillcolor="#FFFBEB"];
+    N3 [label="SistemAktif = DOĞRU", fillcolor="#C3E6CB"];
+    N_Passive_End [label="EKRANA_YAZ: Sistem pasif kaldı.", fillcolor="#FFD7D7"];
+
+    // 2. Sürekli Döngü
+    L0 [label="SÜREKLİ DÖNGÜ BAŞI", shape=circle, fillcolor="#D1C4E9"];
+
+    // 3. Sistem Aktif Kontrolü
+    D2 [label="SistemAktif == DOĞRU?", shape=diamond, fillcolor="#FFFBEB"];
+    N10 [label="EKRANA_YAZ: Sistem pasif.", fillcolor="#F8BBD0"];
+
+    // 4. Sensör Okuma ve Olay Tespiti
+    N4 [label="Sensörleri Oku\n(Hareket, Kapı/Pencere, Ev Sahibi Konumu)"];
+    D3 [label="Olay Var mı?\n(Hareket VEYA Kapı/Pencere Açık)", shape=diamond, fillcolor="#FFFBEB"];
+    N5 [label="AlarmSeviyesi = 0\nEKRANA_YAZ: Durum Normal", fillcolor="#D1E7F5"];
+
+    // 5. Olay Varsa: Yanlış Alarm Kontrolü
+    N6 [label="TEHLİKE TESPİT EDİLDİ", fillcolor="#F44336", fontcolor=white];
+    D4 [label="Ev Sahibi Evde mi?", shape=diamond, fillcolor="#FFFBEB"];
+
+    // 6. Ev Sahibi Evde: Düşük Alarm/Sıfırlama Yolu (Yanlış Alarm İhtimali)
+    P1a [label="AlarmSeviyesi=1 (Düşük)\nKamera_Aktivasyon(KISA)", fillcolor="#FFEB3B"];
+    P1b [label="GİRİŞ ONAY_KODU (Sıfırlama İsteği)", shape=parallelogram, fillcolor="#FFEB3B"];
+    D5 [label="Onay Kodu == 'SIFIRLA'?", shape=diamond, fillcolor="#FFFBEB"];
+    N7 [label="Alarm Sıfırlandı (Seviye=0)\nDEVAM_ET", fillcolor="#8BC34A"];
+
+    // 7. Ev Sahibi Uzakta: Yüksek Alarm Yolu
+    P2a [label="Ev Sahibi Uzakta. Yüksek İhlal!", fillcolor="#F44336", fontcolor=white];
+    D6 [label="Hrk VAR VE Kapı Açık mı?", shape=diamond, fillcolor="#FFFBEB"];
+    N8 [label="AlarmSeviyesi=3 (Yüksek)", fillcolor="#E57373"];
+    N9 [label="AlarmSeviyesi=2 (Orta)", fillcolor="#FFB74D"];
+    P2b [label="Kamera_Aktivasyon(UZUN_KAYIT)"];
+    P2c [label="Bildirim_Gonder(SMS + App + Email)"];
+
+    // 8. Döngü Sonlandırma ve Bekleme
+    N11 [label="BEKLE (5 saniye)", fillcolor="#CFD8DC"];
+
+    // --- Akış Bağlantıları ---
+
+    // Başlangıç ve Aktivasyon
+    N0 -> N1;
+    N1 -> N2;
+    N2 -> D1;
+    D1:no -> N_Passive_End [label="Komut 'C'"];
+    N_Passive_End -> E1;
+    D1:yes -> N3 [label="Komut 'A'"];
+    N3 -> L0;
+
+    // Ana Döngü Kontrolü
+    L0 -> D2;
+    D2:no -> N10 [label="Hayır"];
+    N10 -> N11; // Pasif durumda bekleme
+
+    // Sistem Aktif
+    D2:yes -> N4 [label="Evet"];
+    N4 -> D3;
+
+    // Olay Tespiti
+    D3:no -> N5 [label="Hayır (Normal)"];
+    N5 -> N11;
+    D3:yes -> N6 [label="Evet (İhlal)"];
+    N6 -> D4;
+
+    // Yanlış Alarm Kontrolü
+    D4:yes -> P1a [label="Evet (Evde)"];
+    P1a -> P1b;
+    P1b -> D5;
+    D5:yes -> N7 [label="Evet (Sıfırla)"];
+    N7 -> N11; // Sıfırlandıktan sonra beklemeye geç
+    D5:no -> P2b [label="Hayır (Sıfırlanmadı)"]; // Sıfırlanmazsa yine bildirim akışına düşebilir
+
+    // Yüksek Alarm Akışı
+    D4:no -> P2a [label="Hayır (Uzakta)"];
+    P2a -> D6;
+    D6:yes -> N8 [label="Evet"];
+    N8 -> P2b;
+    D6:no -> N9 [label="Hayır"];
+    N9 -> P2b;
+
+    // Alarm İşlemi ve Bildirim
+    P2b -> P2c;
+    P2c -> N11;
+
+    // Döngü Sonu
+    N11 -> L0 [label="Döngü Tekrarı", style=bold, color="#4CAF50"];
+
+}
