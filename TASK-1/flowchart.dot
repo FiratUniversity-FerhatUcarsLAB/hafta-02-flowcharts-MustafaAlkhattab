@@ -1,0 +1,87 @@
+digraph ATM_Withdrawal {
+    rankdir=TB;
+    node [shape=rectangle, style=rounded, fontname="Arial", fontsize=11];
+
+    start [label="Başla"];
+    readCard [label="Kart Takıldı\nKart Bilgisi Al"];
+    checkAccount [label="Hesap Bulundu mu?"];
+    blocked [label="Hesap/Kart Blokeli mi?"];
+    pinEntry [label="PIN Gir"];
+    verifyPIN [label="PIN Doğrulama"];
+    pinFail [label="Hatalı PIN Sayısı < 3 ?"];
+    blockCard [label="Kartı Blokla\n(Hatalı PIN 3 Kez)"];
+    menu [label="İşlem Seçimi\n1: Para Çekme, 2: İptal"];
+    cancel [label="İşlem İptal"];
+    enterAmount [label="Tutar Gir"];
+    invalidAmount [label="Geçersiz Tutar veya\nMIN_DENOMINATION Katı Değil"];
+    transactionLimit [label="İşlem Limiti Aşıldı mı?"];
+    dailyLimit [label="Günlük Limit Aşıldı mı?"];
+    balanceCheck [label="Yeterli Bakiye Var mı?"];
+    atmCashCheck [label="ATM’de Yeterli Nakit Var mı?"];
+    computePlan [label="Banknot Planı Hesapla"];
+    noPlan [label="Uygun Banknot Kombinasyonu Yok"];
+    offerLower [label="Daha Düşük Tutar Teklif Et"];
+    userDecline [label="Kullanıcı Reddetti mi?"];
+    startTransaction [label="Transaction Başlat"];
+    updateBalance [label="Hesap Bakiyesi ve ATM Kasası Güncelle"];
+    dispenseCash [label="Nakit Ver"];
+    dispenseFail [label="Para Verilemedi mi?"];
+    rollback [label="ROLLBACK\n(Veritabanı & Kasa)"];
+    commit [label="COMMIT\nTransaction Başarılı"];
+    printReceipt [label="Makbuz İster misiniz?"];
+    end [label="Kartı İade Et\nİşlem Bitti"];
+
+    // Akışlar
+    start -> readCard;
+    readCard -> checkAccount;
+    checkAccount -> blocked [label="Hesap Var"];
+    checkAccount -> end [label="Hesap Yok"];
+    blocked -> pinEntry [label="Hayır"];
+    blocked -> end [label="Evet"];
+
+    pinEntry -> verifyPIN;
+    verifyPIN -> menu [label="Doğru"];
+    verifyPIN -> pinFail [label="Hatalı"];
+    pinFail -> pinEntry [label="Evet"];
+    pinFail -> blockCard [label="Hayır"];
+    blockCard -> end;
+
+    menu -> cancel [label="2"];
+    cancel -> end;
+    menu -> enterAmount [label="1"];
+
+    enterAmount -> invalidAmount [label="Geçersiz"];
+    invalidAmount -> end [label="Evet"];
+    invalidAmount -> transactionLimit [label="Hayır"];
+
+    transactionLimit -> end [label="Aşıldı"];
+    transactionLimit -> dailyLimit [label="Uygun"];
+
+    dailyLimit -> end [label="Aşıldı"];
+    dailyLimit -> balanceCheck [label="Uygun"];
+
+    balanceCheck -> end [label="Yetersiz"];
+    balanceCheck -> atmCashCheck [label="Yeterli"];
+
+    atmCashCheck -> end [label="Yetersiz"];
+    atmCashCheck -> computePlan [label="Yeterli"];
+
+    computePlan -> noPlan [label="Kombinasyon Yok"];
+    computePlan -> startTransaction [label="Başarılı"];
+
+    noPlan -> offerLower;
+    offerLower -> userDecline;
+    userDecline -> end [label="Evet"];
+    userDecline -> startTransaction [label="Hayır (Alt Tutar Kabul)"];
+
+    startTransaction -> updateBalance;
+    updateBalance -> dispenseCash;
+    dispenseCash -> dispenseFail [label="Hata"];
+    dispenseCash -> commit [label="Başarılı"];
+
+    dispenseFail -> rollback;
+    rollback -> end;
+
+    commit -> printReceipt;
+    printReceipt -> end;
+}
