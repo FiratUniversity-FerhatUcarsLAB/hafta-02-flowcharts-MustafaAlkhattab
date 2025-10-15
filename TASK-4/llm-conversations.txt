@@ -1,0 +1,113 @@
+Harika 👍
+Aşağıda, **“Üniversite Ders Kayıt Sistemi”** için verdiğim pseudocode’un eksiksiz şekilde **Graphviz DOT dili**ne dönüştürülmüş halini bulabilirsin.
+Bunu `.dot` dosyası olarak kaydedip (örneğin `ders_kayit_sistemi.dot`), şu komutla diyagram oluşturabilirsin:
+
+```bash
+dot -Tpng ders_kayit_sistemi.dot -o ders_kayit_sistemi.png
+```
+
+---
+
+```dot
+digraph DersKayitSistemi {
+    rankdir=TB;
+    node [shape=rectangle, style=rounded, fontname="Arial"];
+
+    // Başlangıç
+    Start [label="Başla", shape=circle, style=filled, fillcolor=lightgreen];
+
+    // Giriş
+    G1 [label="Öğrenci numarasını gir"];
+    G2 [label="Şifreyi gir"];
+    GirisKontrol [label="girisKontrol(ogrenciNo, sifre)?", shape=diamond];
+    GirisHatali [label="Giriş başarısız!\nHatalı bilgiler.\nBitir", fillcolor=mistyrose, style=filled];
+    GirisBasarili [label="Giriş başarılı.\nHoş geldiniz."];
+
+    // Ders listesi
+    DersListe [label="Ders listesini görüntüle"];
+    IslemSec [label="İşlem seçiniz:\n1-Ders ekle\n2-Ders çıkar\n3-Kayıt onayla", shape=diamond];
+
+    // Ders ekleme
+    DersEkle [label="Ders ekleme işlemi"];
+    DersKodGir [label="Ders kodunu gir"];
+    Kontenjan [label="kontenjanMusaitMi?", shape=diamond];
+    KontenjanNo [label="Kontenjan dolu!", fillcolor=mistyrose, style=filled];
+    OnKosul [label="onKosulTamamMi?", shape=diamond];
+    OnKosulNo [label="Ön koşul eksik!", fillcolor=mistyrose, style=filled];
+    Cakis [label="zamanCakisiyorMu?", shape=diamond];
+    CakisYes [label="Zaman çakışması var!", fillcolor=mistyrose, style=filled];
+    KrediKontrol [label="toplamKredi + ders.kredi > 35?", shape=diamond];
+    KrediAsim [label="Kredi limiti aşıldı!", fillcolor=mistyrose, style=filled];
+    DersEklendi [label="Ders eklendi.\nToplam kredi güncellendi."];
+
+    // Ders çıkarma
+    DersCikar [label="Ders çıkarma işlemi"];
+    DersKodSil [label="Çıkarmak istediğiniz ders kodunu gir"];
+    DersListedeMi [label="dersListedeMi?", shape=diamond];
+    DersYok [label="Ders seçili değil!", fillcolor=mistyrose, style=filled];
+    DersSilindi [label="Ders çıkarıldı.\nToplam kredi güncellendi."];
+
+    // Kayıt özeti
+    KayitOzet [label="Kayıt özetini görüntüle"];
+    GPAKontrol [label="GPA < 2.5 ?", shape=diamond];
+    Danisman [label="Danışman onayı alındı mı? (E/H)", shape=diamond];
+    OnayYok [label="Danışman onayı alınmadan\nkayıt yapılamaz.", fillcolor=mistyrose, style=filled];
+    KayitOnay [label="Kaydı onaylamak istiyor musunuz? (E/H)", shape=diamond];
+    KayitOK [label="Kayıt başarıyla tamamlandı."];
+    KayitIptal [label="Kayıt iptal edildi."];
+    
+    // Döngü kontrolü
+    DevamSoru [label="Başka işlem yapmak ister misiniz? (E/H)", shape=diamond];
+    Cikis [label="Sistemden çıkılıyor..."];
+    Bitis [label="Bitiş", shape=doublecircle, fillcolor=lightblue, style=filled];
+
+    // Akışlar
+    Start -> G1 -> G2 -> GirisKontrol;
+    GirisKontrol -> GirisHatali [label="Hayır"];
+    GirisKontrol -> GirisBasarili [label="Evet"];
+    GirisBasarili -> DersListe -> IslemSec;
+
+    // Ders ekleme akışı
+    IslemSec -> DersEkle [label="1"];
+    DersEkle -> DersKodGir -> Kontenjan;
+    Kontenjan -> KontenjanNo [label="Hayır"];
+    Kontenjan -> OnKosul [label="Evet"];
+    OnKosul -> OnKosulNo [label="Hayır"];
+    OnKosul -> Cakis [label="Evet"];
+    Cakis -> CakisYes [label="Evet"];
+    Cakis -> KrediKontrol [label="Hayır"];
+    KrediKontrol -> KrediAsim [label="Evet"];
+    KrediKontrol -> DersEklendi [label="Hayır"];
+    DersEklendi -> DevamSoru;
+
+    // Ders çıkarma akışı
+    IslemSec -> DersCikar [label="2"];
+    DersCikar -> DersKodSil -> DersListedeMi;
+    DersListedeMi -> DersYok [label="Hayır"];
+    DersListedeMi -> DersSilindi [label="Evet"];
+    DersSilindi -> DevamSoru;
+    DersYok -> DevamSoru;
+
+    // Kayıt özeti ve onay
+    IslemSec -> KayitOzet [label="3"];
+    KayitOzet -> GPAKontrol;
+    GPAKontrol -> Danisman [label="Evet"];
+    GPAKontrol -> KayitOnay [label="Hayır"];
+    Danisman -> OnayYok [label="H"];
+    Danisman -> KayitOnay [label="E"];
+    KayitOnay -> KayitOK [label="E"];
+    KayitOnay -> KayitIptal [label="H"];
+    KayitOK -> Bitis;
+    KayitIptal -> Bitis;
+
+    // Döngü ve çıkış
+    DevamSoru -> IslemSec [label="E"];
+    DevamSoru -> Cikis [label="H"];
+    Cikis -> Bitis;
+}
+```
+
+---
+
+İstersen bu DOT kodundan **görsel bir akış diyagramı (PNG, SVG ya da PDF)** oluşturup sana gösterebilirim.
+Yapayım mı?
