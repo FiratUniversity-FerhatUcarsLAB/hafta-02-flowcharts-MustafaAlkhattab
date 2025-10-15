@@ -1,3 +1,2 @@
+Harika! Graphviz DOT diline çevrilen bu akış şeması, Akıllı Ev Güvenlik Sistemi pseudocode'unun mantığını görsel olarak özetler. Şema, sistemin aktiflik kontrolü ile başlar ve sürekli bir sensör okuma döngüsüne (L0) girer. Olay tespit edildiğinde, akış önce bir yanlış alarm kontrolü (Ev Sahibi Evde mi?) yapar. Bu kritik ayrım, alarm seviyesinin (Düşük, Orta, Yüksek) belirlenmesini ve ardından ilgili kamera kaydı ve çok kanallı bildirimlerin gönderilmesini sağlar. Basitçe, bu görselleştirme sistemin karar verme mekanizmasını adım adım takip etmenizi mümkün kılar.
 
-
-sistemin kısa açıklaması (maks. 5-6 satır)
