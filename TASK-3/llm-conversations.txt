@@ -1,0 +1,106 @@
+Elbette 👇
+Aşağıda verdiğin **pseudocode**’un mantığını koruyarak oluşturulmuş, **Graphviz DOT diliyle yazılmış akış diyagramı tanımı** bulunuyor.
+Bu dosyayı `.dot` uzantısıyla kaydedip (örneğin `hastane_sistemi.dot`),
+Graphviz ile (`dot -Tpng hastane_sistemi.dot -o hastane_sistemi.png`) görsel hale getirebilirsin.
+
+---
+
+```dot
+digraph HastaneSistemi {
+    rankdir=TB;
+    node [shape=rectangle, style=rounded, fontname="Arial"];
+
+    // Başlangıç
+    Start [label="Başla", shape=circle, style=filled, fillcolor=lightgreen];
+
+    // Giriş Kontrolü
+    Giris1 [label="Kullanıcı adı giriniz"];
+    Giris2 [label="Şifre giriniz"];
+    KontrolGiris [label="girisKontrol(kullaniciAdi, sifre)?", shape=diamond];
+    GirisBasarisiz [label="Giriş başarısız!\nKullanıcı adı veya şifre hatalı.\nBitir", shape=rectangle, fillcolor=mistyrose, style=filled];
+    GirisBasarili [label="Giriş başarılı,\nHoş geldiniz kullanıcıAdi"];
+
+    // TC Doğrulama
+    TcInput [label="TC Kimlik No giriniz"];
+    TcKontrol [label="tcDogruMu(tc)?", shape=diamond];
+    TcHatali [label="Geçersiz TC Kimlik Numarası!\nBitir", fillcolor=mistyrose, style=filled];
+    TcDogru [label="Kimlik doğrulandı"];
+
+    // İşlem Menüsü
+    Menu [label="İşlem Seçiniz:\n1-Randevu Al\n2-Tahlil Gör\n3-Çıkış"];
+    SecimKontrol [label="secim?", shape=diamond];
+
+    // --- Randevu Modülü ---
+    Randevu [label="Randevu Modülü"];
+    PoliSec [label="Poliklinik seç"];
+    DoktorSec [label="Doktor seç"];
+    SaatSec [label="Saat seç"];
+    RandevuKontrol [label="randevuMusaitMi?", shape=diamond];
+    RandevuOK [label="Randevu alındı.\nSMS gönderiliyor..."];
+    RandevuNO [label="Saat dolu,\nbaşka saat seç"];
+
+    // --- Tahlil Modülü ---
+    Tahlil [label="Tahlil Sonuçları Modülü"];
+    TahlilVarMi [label="tahlilVarMi(tc)?", shape=diamond];
+    TahlilYok [label="Henüz kayıtlı tahlil yok."];
+    TahlilHazirMi [label="tahlilSonucuHazirMi(tc)?", shape=diamond];
+    TahlilHazir [label="Tahlil sonuçlarını göster"];
+    PdfSoru [label="PDF indirmek ister misiniz? (E/H)", shape=diamond];
+    PdfEvet [label="PDF indiriliyor..."];
+    TahlilHazirDegil [label="Sonuçlar hazırlanıyor,\ndaha sonra deneyin"];
+
+    // Çıkış
+    Cikis [label="Sistemden çıkılıyor..."];
+    Bitis [label="İyi günler dileriz!", shape=doublecircle, fillcolor=lightblue, style=filled];
+
+    // Döngü sorusu
+    DevamSoru [label="Başka işlem yapmak ister misiniz? (E/H)", shape=diamond];
+
+    // --- Bağlantılar ---
+    Start -> Giris1 -> Giris2 -> KontrolGiris;
+    KontrolGiris -> GirisBasarisiz [label="Hayır"];
+    KontrolGiris -> GirisBasarili [label="Evet"];
+    GirisBasarili -> TcInput -> TcKontrol;
+    TcKontrol -> TcHatali [label="Hayır"];
+    TcKontrol -> TcDogru [label="Evet"];
+    TcDogru -> Menu -> SecimKontrol;
+
+    // Randevu akışı
+    SecimKontrol -> Randevu [label="1"];
+    Randevu -> PoliSec -> DoktorSec -> SaatSec -> RandevuKontrol;
+    RandevuKontrol -> RandevuOK [label="Evet"];
+    RandevuKontrol -> RandevuNO [label="Hayır"];
+    RandevuOK -> DevamSoru;
+    RandevuNO -> DevamSoru;
+
+    // Tahlil akışı
+    SecimKontrol -> Tahlil [label="2"];
+    Tahlil -> TahlilVarMi;
+    TahlilVarMi -> TahlilYok [label="Hayır"];
+    TahlilVarMi -> TahlilHazirMi [label="Evet"];
+    TahlilHazirMi -> TahlilHazir [label="Evet"];
+    TahlilHazir -> PdfSoru;
+    PdfSoru -> PdfEvet [label="E"];
+    PdfSoru -> DevamSoru [label="H"];
+    PdfEvet -> DevamSoru;
+    TahlilHazirMi -> TahlilHazirDegil [label="Hayır"];
+    TahlilHazirDegil -> DevamSoru;
+    TahlilYok -> DevamSoru;
+
+    // Çıkış akışı
+    SecimKontrol -> Cikis [label="3"];
+    Cikis -> Bitis;
+
+    // Geçersiz seçim
+    SecimKontrol -> Menu [label="Diğer"];
+
+    // Döngü
+    DevamSoru -> Menu [label="E"];
+    DevamSoru -> Bitis [label="H"];
+}
+```
+
+---
+
+İstersen bir sonraki adımda bu DOT koduna uygun **gerçek akış diyagramı görselini (PNG veya SVG)** de senin için oluşturabilirim.
+Yapayım mı?
