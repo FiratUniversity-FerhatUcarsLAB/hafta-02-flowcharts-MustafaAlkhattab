@@ -1,0 +1,76 @@
+digraph OnlineShoppingCart {
+    rankdir=TB;
+    node [shape=rectangle, style=rounded, fontname="Arial", fontsize=11];
+
+    start [label="Başla"];
+    login [label="Kullanıcı Girişi"];
+    loginCheck [label="Giriş Başarılı mı?"];
+    loginFail [label="Giriş Başarısız\nBitir"];
+    categoryLoop [label="Kategori Seçimi\n(1: Elektronik, 2: Giyim, 3: Kitap, 4: Çıkış)"];
+    exitCategory [label="Kategori Çıkış\n(4 Seçildi)"];
+    showProducts [label="Ürünleri Listele"];
+    selectProduct [label="Ürün ID Gir"];
+    stockCheck [label="Stokta Var mı?"];
+    addToCart [label="Ürünü Sepete Ekle"];
+    noStock [label="Stokta Yok"];
+    cartLoop [label="Sepeti Görüntüle / Düzenle\n(1: Çıkar, 2: Değiştir, 3: İleri)"];
+    editCart [label="Sepeti Düzenle"];
+    discountCheck [label="İndirim Kodu Var mı?"];
+    discountValid [label="Kod Geçerli mi?"];
+    applyDiscount [label="İndirim Uygula"];
+    invalidDiscount [label="Geçersiz Kod"];
+    min50Check [label="Toplam >= 50 TL mi?"];
+    stopLow [label="Yetersiz Tutar\nBitir"];
+    shippingCheck [label="Toplam >= 200 TL mi?"];
+    freeShipping [label="Kargo Ücretsiz"];
+    addShipping [label="Kargo 30 TL"];
+    paymentSelect [label="Ödeme Yöntemi Seç\n(1-Kart, 2-Havale, 3-Kapıda)"];
+    confirmOrder [label="Sipariş Onayı (E/H)"];
+    orderPlaced [label="Sipariş Oluşturuldu\nTeşekkürler"];
+    orderCancelled [label="Sipariş İptal Edildi"];
+    end [label="Bitir"];
+
+    // Akışlar
+    start -> login;
+    login -> loginCheck;
+    loginCheck -> loginFail [label="Hayır"];
+    loginCheck -> categoryLoop [label="Evet"];
+
+    categoryLoop -> exitCategory [label="4"];
+    exitCategory -> cartLoop;
+
+    categoryLoop -> showProducts [label="1-3"];
+    showProducts -> selectProduct;
+    selectProduct -> stockCheck;
+
+    stockCheck -> addToCart [label="Evet"];
+    stockCheck -> noStock [label="Hayır"];
+    noStock -> categoryLoop;
+    addToCart -> categoryLoop;
+
+    cartLoop -> editCart [label="1 veya 2"];
+    editCart -> cartLoop;
+    cartLoop -> discountCheck [label="3"];
+
+    discountCheck -> discountValid [label="Evet"];
+    discountCheck -> min50Check [label="Hayır"];
+    discountValid -> applyDiscount [label="Evet"];
+    discountValid -> invalidDiscount [label="Hayır"];
+    applyDiscount -> min50Check;
+    invalidDiscount -> min50Check;
+
+    min50Check -> stopLow [label="Hayır (<50 TL)"];
+    min50Check -> shippingCheck [label="Evet"];
+
+    shippingCheck -> freeShipping [label="Evet"];
+    shippingCheck -> addShipping [label="Hayır"];
+    freeShipping -> paymentSelect;
+    addShipping -> paymentSelect;
+
+    paymentSelect -> confirmOrder;
+    confirmOrder -> orderPlaced [label="Evet"];
+    confirmOrder -> orderCancelled [label="Hayır"];
+
+    orderPlaced -> end;
+    orderCancelled -> end;
+}
